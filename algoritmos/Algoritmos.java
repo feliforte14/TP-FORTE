@@ -95,7 +95,7 @@ public class Algoritmos {
 		// Se genera el string de período en formato "YYYY/MM"
 		String periodo = formatearPeriodo(anio, mes);
 
-		// Recorre todo el árbol y acumula precipitaciones por día para el período dado
+		// Recorre todo el arbol y acumula precipitaciones por día para el período dado
 		agregarMedicionesMes(arbol, periodo, sumas, conteos);
 
 		// Calcula el promedio por día y lo acola con el día como prioridad
@@ -133,39 +133,31 @@ public class Algoritmos {
 	}
 
 	/**
-	 * Calcula la cantidad total de precipitaciones registradas en cada mes del año,
-	 * considerando todos los campos del árbol, y devuelve una cola de prioridad con esos datos.
+	 * Determina el mes con mayor cantidad total de precipitaciones registradas
+	 * en todos los campos del árbol, considerando toda la historia registrada.
 	 *
-	 * @return Cola de prioridad donde cada elemento representa la suma total de milímetros
-	 *         de lluvia de un mes, con el mes (1 a 12) como prioridad y la suma como valor.
-	 *
-	 * Funcionamiento:
-	 * - Se recorre recursivamente todo el árbol de campos.
-	 * - Por cada campo, se accede a todos sus períodos registrados.
-	 * - Se suman todas las precipitaciones de cada mes.
-	 * - El resultado se almacena en una cola de prioridad con el mes como prioridad.
-	 *
-	 * Nota: El método no devuelve un único mes lluvioso, sino todos los meses con su suma total,
-	 * lo que permite luego determinar cuál fue el más lluvioso comparando prioridades.
+	 * @return Número del mes (1 a 12) con más lluvia acumulada.
+	 *         Si no hay registros, devuelve 0.
 	 */
-	public ColaPrioridadTDA mesMasLluvioso() {
-		ColaPrioridadTDA resultado = new ColaPrioridad();
-		resultado.inicializarCola();
-
+	public int mesMasLluvioso() {
 		// Arreglo que acumula lluvias por índice de mes (1 a 12)
 		int[] sumasMes = new int[13];
 
 		// Recorre el árbol acumulando lluvias por mes en todos los campos
 		acumularLluviasPorMes(arbol, sumasMes);
 
-		// Se acolan solo los meses donde hubo lluvia
+		// Busca el mes con mayor cantidad acumulada
+		int mesMax = 0;
+		int maxLluvia = -1;
+
 		for (int mes = 1; mes <= 12; mes++) {
-			if (sumasMes[mes] > 0) {
-				resultado.acolarPrioridad(sumasMes[mes], mes);
+			if (sumasMes[mes] > maxLluvia) {
+				maxLluvia = sumasMes[mes];
+				mesMax = mes;
 			}
 		}
 
-		return resultado;
+		return mesMax;
 	}
 
 	/**
@@ -207,7 +199,6 @@ public class Algoritmos {
 	 * Devuelve una cola con los nombres de los campos cuya cantidad total de precipitaciones
 	 * durante el mes especificado supera el promedio general de lluvia registrado en todos
 	 * los campos durante ese mismo mes.
-	 *
 	 * Funcionamiento:
 	 * 1. Calcula el total acumulado de precipitaciones y el número de registros del mes indicado.
 	 * 2. Obtiene el promedio de lluvia mensual.
@@ -265,7 +256,6 @@ public class Algoritmos {
 	 * Convierte un año y un mes en un string con el formato "YYYY/MM".
 	 * Si el mes tiene un solo dígito, se antepone un cero para mantener
 	 * un formato uniforme y facilitar búsquedas o comparaciones.
-	 *
 	 * Ejemplo:
 	 *  anio = 2024, mes = 3 -> "2024/03"
 	 *  anio = 2024, mes = 11 -> "2024/11"
@@ -294,12 +284,10 @@ public class Algoritmos {
 	/**
 	 * Recorre recursivamente todo el árbol de campos y acumula las precipitaciones diarias
 	 * correspondientes a un determinado período (mes específico).
-	 *
 	 * Para cada nodo (campo) que tenga datos para el período especificado, se suman los valores
 	 * de lluvia por día en el arreglo `sumas`, y se incrementa el contador correspondiente en
 	 * el arreglo `conteos`. Estos arreglos deben tener tamaño 32, ya que los índices representan
 	 * los días del mes (1 a 31).
-	 *
 	 * Este método permite luego calcular promedios diarios de precipitaciones entre todos
 	 * los campos, dado un mes y año.
 	 *
@@ -340,13 +328,11 @@ public class Algoritmos {
 	 * @param nodo      Nodo actual del árbol de campos.
 	 * @param sumasMes  Arreglo de 13 posiciones donde se acumulan las lluvias totales por mes.
 	 *                  El índice representa el número de mes (1 = enero, ..., 12 = diciembre).
-	 *
 	 * Funcionamiento:
 	 * - Para cada campo, se recuperan los períodos (formato "YYYY/MM").
 	 * - Se extrae la subcadena del mes y se valida manualmente que tenga formato correcto y rango 1-12.
 	 * - Se suman los valores de lluvia del período y se acumulan en el mes correspondiente.
 	 * - Se repite recursivamente para los hijos izquierdo y derecho.
-	 *
 	 * Consideraciones:
 	 * - El índice 0 no se utiliza. Si el mes es inválido, se ignora el período.
 	 */
@@ -383,13 +369,11 @@ public class Algoritmos {
 	/**
 	 * Recorre todo el árbol de campos para acumular la suma total de precipitaciones
 	 * registradas en un día específico de un determinado período ("YYYY/MM").
-	 *
 	 * Por cada nodo (campo), busca en la cola de precipitaciones del período indicado
 	 * las entradas correspondientes al día solicitado. Si encuentra coincidencias,
 	 * acumula los valores en el arreglo `sumaYConteo`:
 	 *   - sumaYConteo[0] → suma acumulada de precipitaciones del día.
 	 *   - sumaYConteo[1] → cantidad de registros encontrados para ese día.
-	 *
 	 * Este método permite calcular luego el promedio de lluvia en ese día en todos los campos.
 	 *
 	 * @param nodo          Nodo actual del árbol (campo de cultivo).
@@ -419,13 +403,11 @@ public class Algoritmos {
 	/**
 	 * Recorre recursivamente todo el árbol de precipitaciones para identificar el campo
 	 * con la mayor cantidad total de lluvias acumuladas en todos los períodos registrados.
-	 *
 	 * Para cada nodo (campo):
 	 * - Obtiene todos los períodos disponibles (ej: "2024/03", "2024/04", etc.).
 	 * - Suma todas las precipitaciones de esos períodos.
 	 * - Si la suma supera el valor máximo acumulado hasta el momento (`maxLluvia[0]`),
 	 *   actualiza `campoMax[0]` con el nombre del campo actual y `maxLluvia[0]` con la nueva suma.
-	 *
 	 * Usa arreglos de un solo elemento (`String[] campoMax`, `int[] maxLluvia`) para simular
 	 * paso por referencia y poder mantener el valor máximo encontrado entre llamadas recursivas.
 	 *
@@ -461,12 +443,10 @@ public class Algoritmos {
 	 * Recorre recursivamente todo el árbol binario de campos para acumular la cantidad total
 	 * de lluvia registrada en un período específico (por ejemplo, "2024/03") y contar
 	 * cuántos valores se han registrado en total para dicho período.
-	 *
 	 * Por cada nodo (campo), si existen datos para el período:
 	 * - Recupera la cola de precipitaciones correspondiente.
 	 * - Acumula la suma total de precipitaciones en `sumaYConteo[0]`.
 	 * - Incrementa el contador de registros en `sumaYConteo[1]`.
-	 *
 	 * Utiliza un arreglo de dos posiciones como parámetro (`sumaYConteo`) para simular paso
 	 * por referencia: la posición 0 almacena la suma total, y la 1 el conteo de datos válidos.
 	 *
@@ -496,14 +476,12 @@ public class Algoritmos {
 	 * Recorre recursivamente el árbol de precipitaciones y agrega a una cola todos los nombres de campos
 	 * cuya suma total de precipitaciones en un período determinado supere el valor promedio global
 	 * calculado previamente para ese mismo período.
-	 *
 	 * Funcionamiento:
 	 * - Por cada nodo (campo) del árbol:
 	 *   - Se recupera la cola de precipitaciones correspondiente al período.
 	 *   - Se calcula la suma total de precipitaciones registradas en ese campo.
 	 *   - Si la suma supera el promedio, se acola el nombre del campo en la cola resultado.
 	 * - El recorrido es completo e inorden (visita izquierda, actual, derecha).
-	 *
 	 * Este método se utiliza después de calcular el promedio total de lluvias en un período,
 	 * para identificar los campos con registros superiores a dicho valor.
 	 *
@@ -538,14 +516,12 @@ public class Algoritmos {
 	/**
 	 * Busca un campo específico en el árbol de precipitaciones y, si lo encuentra,
 	 * agrega todas las precipitaciones registradas en un período dado a una cola de prioridad.
-	 *
 	 * Funcionamiento:
 	 * - El recorrido del árbol es binario, usando orden alfabético (ignorando mayúsculas/minúsculas).
 	 * - Si el campo actual coincide con el campo buscado, se recuperan sus precipitaciones
 	 *   para el período especificado y se acolan en la cola de prioridad pasada como parámetro.
 	 * - Si no coincide, se continúa la búsqueda hacia el subárbol izquierdo o derecho,
 	 *   dependiendo de la comparación alfabética.
-	 *
 	 * Este método permite extraer todas las precipitaciones de un campo puntual
 	 * en un mes determinado, respetando el orden por día.
 	 *
@@ -577,8 +553,19 @@ public class Algoritmos {
 	}
 
 
+	/**
+	 * Verifica si un nodo del árbol contiene un período específico registrado.
+	 * Este metodo recorre la cola de períodos almacenados en el nodo y compara
+	 * cada uno con el período buscado. Si encuentra coincidencia, devuelve true.
+	 * En caso contrario, continúa hasta agotar la cola.
+	 * @param nodo Nodo del árbol de precipitaciones (puede ser raíz o subnodo).
+	 * @param periodo Período a buscar, expresado como string con formato "AAAA/MM".
+	 * @return true si el período existe en el nodo, false en caso contrario o si el nodo es nulo o está vacío.
+	 * Complejidad temporal: O(n), siendo n la cantidad de períodos registrados en el nodo.
+	 */
 	private boolean existePeriodo(ABBPrecipitacionesTDA nodo, String periodo) {
-		if (nodo == null || nodo.arbolVacio()) return false;
+		if (nodo == null || nodo.arbolVacio())
+			return false;
 
 		ColaStringTDA periodos = nodo.periodos();
 		while (!periodos.colaVacia()) {
@@ -590,6 +577,7 @@ public class Algoritmos {
 
 		return false;
 	}
+
 
 }
 
